@@ -1228,6 +1228,18 @@ a { color: var(--red-dark); }
   html.standalone #detail { bottom: calc(8px + env(safe-area-inset-bottom)); max-height: calc(72% - env(safe-area-inset-bottom)); }
 }
 
+/* Подсказка режима «указать себя вручную» */
+#geo-hint {
+  position: fixed; left: 50%; transform: translateX(-50%); top: calc(12px + env(safe-area-inset-top));
+  z-index: 3500; display: none; align-items: center; gap: 10px;
+  background: #2d7dff; color: #fff; padding: 10px 12px 10px 14px; border-radius: 12px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.28); font-size: 13px; font-weight: 600; max-width: 92vw;
+}
+#geo-hint button {
+  border: none; background: rgba(255,255,255,.25); color: #fff; width: 24px; height: 24px;
+  border-radius: 7px; font-size: 16px; line-height: 1; flex: none; cursor: pointer;
+}
+
 /* Баннер «Установите как приложение» (iOS Safari) */
 .ios-install {
   position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 4000;
@@ -2844,43 +2856,66 @@ a { color: var(--red-dark); }
   window.__copyBtn = copyBtn;
 
   /* ---------------- Геолокация ---------------- */
-  var meMarker = null, meCircle = null, geoOn = false;
+  var meMarker = null, meCircle = null, geoOn = false, manualPick = false;
+  // Поставить «я здесь» по координатам (из GPS или вручную по клику на карте)
+  function applyGeo(ll, accuracy, manual) {
+    var btn = document.getElementById("btn-geo");
+    if (meMarker) map.removeLayer(meMarker);
+    if (meCircle) map.removeLayer(meCircle);
+    meMarker = L.marker(ll, { icon: L.divIcon({ className: "", html: '<div class="me-dot"></div>', iconSize:[18,18], iconAnchor:[9,9] }) }).addTo(map);
+    if (accuracy) meCircle = L.circle(ll, { radius: accuracy, color: "#2d7dff", weight: 1, fillOpacity: .08 }).addTo(map);
+    map.flyTo(ll, 15);
+    btn.textContent = "📍"; btn.classList.add("active");
+    btn.title = manual ? "Место указано вручную — нажмите, чтобы сбросить" : "Геопозиция включена — нажмите, чтобы выключить";
+    geoOn = true; geoLatLng = ll;
+    geoStation = nearestStation(ll[0], ll[1]);   // ближайшая станция метро для маршрутов «от меня»
+    if (originState.type === "geo") refreshMetro();
+  }
+  // Режим «указать себя вручную»: подсказка + следующий клик по карте ставит точку
+  function startManualPick() {
+    manualPick = true;
+    var h = document.getElementById("geo-hint");
+    if (!h) { h = document.createElement("div"); h.id = "geo-hint"; document.body.appendChild(h); }
+    h.innerHTML = '<span>📍 Нажмите на карту в том месте, где вы находитесь</span><button id="geo-hint-x" aria-label="Отмена">×</button>';
+    h.style.display = "flex";
+    map.getContainer().style.cursor = "crosshair";
+    document.getElementById("geo-hint-x").onclick = stopManualPick;
+  }
+  function stopManualPick() {
+    manualPick = false;
+    var h = document.getElementById("geo-hint"); if (h) h.style.display = "none";
+    if (map) map.getContainer().style.cursor = "";
+  }
   function toggleGeo() {
     var btn = document.getElementById("btn-geo");
     if (geoOn) { turnGeoOff(btn); return; }               // выключить
-    if (!navigator.geolocation) { alert("Геолокация не поддерживается браузером"); return; }
+    if (manualPick) { stopManualPick(); return; }
+    if (!navigator.geolocation) { startManualPick(); return; }
     btn.textContent = "…";
-    var onOk = function (pos) {
-      var ll = [pos.coords.latitude, pos.coords.longitude];
-      if (meMarker) map.removeLayer(meMarker);
-      if (meCircle) map.removeLayer(meCircle);
-      meMarker = L.marker(ll, { icon: L.divIcon({ className: "", html: '<div class="me-dot"></div>', iconSize:[18,18], iconAnchor:[9,9] }) }).addTo(map);
-      meCircle = L.circle(ll, { radius: pos.coords.accuracy, color: "#2d7dff", weight: 1, fillOpacity: .08 }).addTo(map);
-      map.flyTo(ll, 15);
-      btn.textContent = "📍"; btn.classList.add("active"); btn.title = "Геопозиция включена — нажмите, чтобы выключить";
-      geoOn = true; geoLatLng = ll;
-      geoStation = nearestStation(ll[0], ll[1]);   // ближайшая станция метро для маршрутов «от меня»
-      if (originState.type === "geo") refreshMetro();
+    var onOk = function (pos) { applyGeo([pos.coords.latitude, pos.coords.longitude], pos.coords.accuracy, false); };
+    var fail = function (reason) {
+      btn.textContent = "📍";
+      startManualPick();   // сразу включаем ручной режим — приложение остаётся полезным
+      alert(reason + "\n\nУкажите себя вручную: закройте это окно и нажмите на карту в том месте, где вы сейчас находитесь — все маршруты «от меня» будут считаться от этой точки.\n\n(Авто-геолокация часто не работает у значков, добавленных на экран «Домой» — это особенность iPhone. В Safari по ссылке она работает.)");
     };
     var onErr = function (err) {
-      btn.textContent = "📍";
-      if (err && err.code === 1) {                 // PERMISSION_DENIED
-        alert("Доступ к геопозиции запрещён.\n\nНа iPhone: Настройки → Конфиденциальность и безопасность → Службы геолокации → включите. Затем Настройки → Safari → Геопозиция → «Спросить» или «Разрешить». Вернитесь и снова нажмите 📍.\n\n(Приложение и без геопозиции полностью работает — маршруты можно строить от выбранного отеля.)");
-      } else if (err && err.code === 3) {           // TIMEOUT — повторим без высокой точности
-        navigator.geolocation.getCurrentPosition(onOk, function () {
-          alert("Не удалось определить местоположение — похоже, нет сигнала GPS. Попробуйте ближе к окну / на улице.");
-        }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 120000 });
-      } else {                                       // POSITION_UNAVAILABLE и прочее
-        alert("Не удалось определить местоположение. Проверьте, что включены Службы геолокации, и попробуйте ещё раз.");
+      if (err && err.code === 3) {                 // TIMEOUT — повтор без высокой точности
+        navigator.geolocation.getCurrentPosition(onOk, function () { fail("Не удалось поймать сигнал GPS."); },
+          { enableHighAccuracy: false, timeout: 15000, maximumAge: 120000 });
+      } else if (err && err.code === 1) {          // PERMISSION_DENIED
+        fail("Доступ к геопозиции этому приложению не выдан.");
+      } else {
+        fail("Не удалось определить местоположение автоматически.");
       }
     };
     navigator.geolocation.getCurrentPosition(onOk, onErr, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
   }
   function turnGeoOff(btn) {
+    stopManualPick();
     if (meMarker) { map.removeLayer(meMarker); meMarker = null; }
     if (meCircle) { map.removeLayer(meCircle); meCircle = null; }
     geoOn = false; geoLatLng = null; geoStation = null;
-    btn.classList.remove("active"); btn.title = "Показать моё местоположение";
+    btn.classList.remove("active"); btn.title = "Моё местоположение (или указать вручную по карте)";
     // если старт метро/такси был «от меня» — вернуть на видимый отель
     if (originState.type === "geo") {
       var v = visibleHotels();
@@ -2903,6 +2938,7 @@ a { color: var(--red-dark); }
       b.addEventListener("click", function () { setBase(b.dataset.base); });
     });
     document.getElementById("btn-geo").addEventListener("click", toggleGeo);
+    map.on("click", function (e) { if (manualPick) { stopManualPick(); applyGeo([e.latlng.lat, e.latlng.lng], null, true); } });
     document.getElementById("btn-fit").addEventListener("click", function () {
       var all = HOTELS.concat(PLACES).map(function(x){return [x.lat,x.lng];});
       map.fitBounds(all, { padding: [50,50] });
