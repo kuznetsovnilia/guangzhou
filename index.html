@@ -2850,7 +2850,7 @@ a { color: var(--red-dark); }
     if (geoOn) { turnGeoOff(btn); return; }               // выключить
     if (!navigator.geolocation) { alert("Геолокация не поддерживается браузером"); return; }
     btn.textContent = "…";
-    navigator.geolocation.getCurrentPosition(function (pos) {
+    var onOk = function (pos) {
       var ll = [pos.coords.latitude, pos.coords.longitude];
       if (meMarker) map.removeLayer(meMarker);
       if (meCircle) map.removeLayer(meCircle);
@@ -2861,7 +2861,20 @@ a { color: var(--red-dark); }
       geoOn = true; geoLatLng = ll;
       geoStation = nearestStation(ll[0], ll[1]);   // ближайшая станция метро для маршрутов «от меня»
       if (originState.type === "geo") refreshMetro();
-    }, function () { btn.textContent = "📍"; alert("Не удалось определить местоположение. Разрешите доступ к геопозиции в браузере."); }, { enableHighAccuracy: true, timeout: 10000 });
+    };
+    var onErr = function (err) {
+      btn.textContent = "📍";
+      if (err && err.code === 1) {                 // PERMISSION_DENIED
+        alert("Доступ к геопозиции запрещён.\n\nНа iPhone: Настройки → Конфиденциальность и безопасность → Службы геолокации → включите. Затем Настройки → Safari → Геопозиция → «Спросить» или «Разрешить». Вернитесь и снова нажмите 📍.\n\n(Приложение и без геопозиции полностью работает — маршруты можно строить от выбранного отеля.)");
+      } else if (err && err.code === 3) {           // TIMEOUT — повторим без высокой точности
+        navigator.geolocation.getCurrentPosition(onOk, function () {
+          alert("Не удалось определить местоположение — похоже, нет сигнала GPS. Попробуйте ближе к окну / на улице.");
+        }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 120000 });
+      } else {                                       // POSITION_UNAVAILABLE и прочее
+        alert("Не удалось определить местоположение. Проверьте, что включены Службы геолокации, и попробуйте ещё раз.");
+      }
+    };
+    navigator.geolocation.getCurrentPosition(onOk, onErr, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
   }
   function turnGeoOff(btn) {
     if (meMarker) { map.removeLayer(meMarker); meMarker = null; }
