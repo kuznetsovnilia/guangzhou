@@ -1,0 +1,33 @@
+{
+  "name": "Гуанчжоу — карта путешественника",
+  "short_name": "Гуанчжоу",
+  "description": "Интерактивный путеводитель по Гуанчжоу: отели, места, рестораны, маршруты метро и такси, разговорник.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f9d78",
+  "theme_color": "#0f9d78",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
