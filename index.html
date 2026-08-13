@@ -813,11 +813,14 @@ a { color: var(--red-dark); }
 .visited-chk input { width: 18px; height: 18px; accent-color: var(--jade); }
 .visited-chk.on { color: var(--jade); }
 
-/* «Открыто сейчас?» */
-.open-now { font-size: 12.5px; font-weight: 700; padding: 7px 11px; border-radius: 9px; margin: 4px 0 8px; }
-.open-now span { font-weight: 500; opacity: .85; }
+/* «Открыто сейчас?» + отсчёт до закрытия */
+.open-now { font-size: 13px; font-weight: 700; padding: 8px 11px; border-radius: 9px; margin: 4px 0 8px; }
+.open-now b { font-weight: 800; }
+.open-now span { display: block; font-weight: 500; font-size: 11px; opacity: .8; margin-top: 2px; }
 .open-now.open { background: rgba(15,157,120,.12); color: var(--jade); }
+.open-now.open.soon { background: #fff4e6; color: #e8590c; }
 .open-now.closed { background: #fff0f0; color: var(--red); }
+:root.dark .open-now.open.soon { background: #2a1e12; }
 :root.dark .open-now.closed { background: #2a1416; }
 
 /* Карточка «Покажите таксисту» */
@@ -2485,9 +2488,19 @@ a { color: var(--red-dark); }
     var t = chinaNowMin();
     var open = pr.c > pr.o ? (t >= pr.o && t < pr.c) : (t >= pr.o || t < pr.c);
     var hh = function (x) { x = ((x % 1440) + 1440) % 1440; return pad2(Math.floor(x / 60)) + ":" + pad2(x % 60); };
-    return open
-      ? '<div class="open-now open">🟢 Сейчас открыто <span>· до ' + hh(pr.c) + ' (время Китая)</span></div>'
-      : '<div class="open-now closed">🔴 Сейчас закрыто <span>· откроется ' + hh(pr.o) + ' (время Китая)</span></div>';
+    if (open) {
+      var left = ((pr.c - t) % 1440 + 1440) % 1440;      // мин до закрытия
+      return '<div class="open-now open' + (left <= 60 ? ' soon' : '') + '">🟢 Открыто · до закрытия <b>' + fmtMin(left) + '</b>' +
+        '<span>закрывается в ' + hh(pr.c) + ' · время Китая</span></div>';
+    }
+    var until = ((pr.o - t) % 1440 + 1440) % 1440;        // мин до открытия
+    return '<div class="open-now closed">🔴 Закрыто · откроется через <b>' + fmtMin(until) + '</b>' +
+      '<span>открытие в ' + hh(pr.o) + ' · время Китая</span></div>';
+  }
+  // «Живое» обновление отсчёта, пока открыта карточка места
+  function refreshOpenNow() {
+    var slot = document.getElementById("open-now-slot");
+    if (slot && curDestId) slot.innerHTML = openNowBadge(curDestId);
   }
 
   /* ---------------- Памятка: оплата, связь/VPN, SOS, чек-лист сборов ---------------- */
@@ -2781,7 +2794,7 @@ a { color: var(--red-dark); }
     var day = TRIP ? TRIP.days[tripDay] : null;
     var wk = (day && day.weekend) ? "weekend" : "weekday";
     var html = '<div class="travel-h" style="margin-top:16px">🕐 Часы работы и загруженность</div>';
-    html += openNowBadge(o.id);
+    html += '<div id="open-now-slot">' + openNowBadge(o.id) + '</div>';
     if (info.hours) {
       html += '<div class="hc-hours"><span>🏛️ Часы</span><b>' + info.hours.text + '</b></div>';
       if (info.hours.tickets) html += '<div class="hc-hours"><span>🎫 Билеты</span><b>' + info.hours.tickets + '</b></div>';
@@ -3574,6 +3587,7 @@ a { color: var(--red-dark); }
   var all = HOTELS.concat(PLACES).map(function(x){return toDisp(x.lat, x.lng);});
   if (all.length) map.fitBounds(all, { padding: [60,60] });
   migBanner();   // напоминание о миграционной карте (за 3–4 дня до вылета)
+  setInterval(refreshOpenNow, 30000);   // живой отсчёт до закрытия/открытия у открытой точки
 
   /* ---------------- PWA: установка на телефон + офлайн ---------------- */
   (function pwa() {
