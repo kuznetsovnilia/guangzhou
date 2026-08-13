@@ -737,10 +737,12 @@ a { color: var(--red-dark); }
 .brand p { margin: 4px 0 0; font-size: 12.5px; opacity: .9; }
 
 /* Табы */
-.tabs { display: flex; gap: 4px; padding: 10px 12px 0; background: var(--card); border-bottom: 1px solid var(--line); }
+.tabs { display: flex; gap: 4px; padding: 10px 12px 0; background: var(--card); border-bottom: 1px solid var(--line);
+  overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
-  flex: 1; padding: 9px 6px; border: none; background: transparent; color: var(--muted);
-  font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0; position: relative; transition: color .15s;
+  flex: 1 0 auto; white-space: nowrap; padding: 9px 10px; border: none; background: transparent; color: var(--muted);
+  font-size: 12.5px; font-weight: 600; border-radius: 8px 8px 0 0; position: relative; transition: color .15s;
 }
 .tab.active { color: var(--red); }
 .tab.active::after {
@@ -776,6 +778,85 @@ a { color: var(--red-dark); }
 .trip-chip.past .tc-dow { color: var(--muted); }
 .trip-chip.today { border-color: var(--jade); box-shadow: 0 0 0 2px rgba(15,157,120,.25); }
 .trip-chip.today.active { border-color: var(--jade); background: var(--jade); }
+/* ---------- Планировщик по дням ---------- */
+.plan-head { font-size: 15px; font-weight: 800; margin: 2px 2px 6px; }
+.plan-sub { font-size: 12px; color: var(--muted); margin: 0 2px 12px; line-height: 1.45; }
+.plan-sub b { color: var(--jade); }
+.plan-empty { font-size: 12.5px; color: var(--muted); background: var(--card); border: 1px dashed var(--line);
+  border-radius: 10px; padding: 14px; text-align: center; line-height: 1.5; }
+.plan-day { border: 1px solid var(--line); border-radius: 12px; padding: 10px 11px; margin-bottom: 10px; }
+.plan-day.today { border-color: var(--jade); box-shadow: 0 0 0 2px rgba(15,157,120,.18); }
+.plan-day.past { opacity: .6; }
+.pd-head { font-size: 13px; font-weight: 800; margin-bottom: 7px; }
+.pd-head .pd-n { color: var(--red); }
+.pd-badge { font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; margin-left: 4px; }
+.pd-badge.today { background: var(--jade); color: #fff; }
+.pd-badge.hol { background: #fff0f0; color: var(--red); }
+.pd-empty { font-size: 12px; color: var(--muted); padding: 3px 2px; }
+.pd-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.pd-item.done .pd-nm { color: var(--muted); text-decoration: line-through; }
+.pd-ic { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; flex: none; }
+.pd-nm { flex: 1; font-size: 13px; font-weight: 600; cursor: pointer; }
+.pd-nm:hover { color: var(--red); }
+.pd-rm { border: none; background: #f0f0f4; color: var(--ink-soft); width: 24px; height: 24px; border-radius: 7px; font-size: 13px; flex: none; }
+.pd-rm:hover { background: var(--red); color: #fff; }
+:root.dark .pd-rm { background: #20242e; color: var(--ink); }
+.pd-travel { font-size: 11px; color: var(--muted); padding: 2px 0 4px 34px; }
+
+/* Блок «в план / посещено» в панели точки */
+.place-extras { display: flex; flex-direction: column; gap: 9px; margin: 12px 0; padding: 11px; border: 1px solid var(--line); border-radius: 11px; }
+.plan-pick { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pp-lbl { font-size: 12.5px; font-weight: 700; }
+.pp-sel { flex: 1; max-width: 60%; padding: 7px 9px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 12.5px; font-family: inherit; background: #fff; color: var(--ink); }
+:root.dark .pp-sel { background: #20242e; color: var(--ink); }
+.visited-chk { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.visited-chk input { width: 18px; height: 18px; accent-color: var(--jade); }
+.visited-chk.on { color: var(--jade); }
+
+/* «Открыто сейчас?» */
+.open-now { font-size: 12.5px; font-weight: 700; padding: 7px 11px; border-radius: 9px; margin: 4px 0 8px; }
+.open-now span { font-weight: 500; opacity: .85; }
+.open-now.open { background: rgba(15,157,120,.12); color: var(--jade); }
+.open-now.closed { background: #fff0f0; color: var(--red); }
+:root.dark .open-now.closed { background: #2a1416; }
+
+/* Карточка «Покажите таксисту» */
+#driver-modal { display: none; position: fixed; inset: 0; z-index: 4300; align-items: center; justify-content: center;
+  background: rgba(15,20,30,.75); padding: 16px; }
+#driver-modal .dr-card { position: relative; background: #fff; color: #14161c; border-radius: 20px; width: min(460px, 94vw);
+  padding: 26px 20px 20px; text-align: center; box-shadow: var(--shadow-lg); }
+#driver-modal .dr-x { position: absolute; top: 10px; right: 12px; border: none; background: #f0f0f4; color: #555;
+  width: 32px; height: 32px; border-radius: 10px; font-size: 20px; }
+.dr-hint { font-size: 12.5px; color: #888; margin-bottom: 12px; }
+.dr-zh { font-size: 34px; font-weight: 900; line-height: 1.2; color: #14161c; }
+.dr-addr { font-size: 16px; color: #333; margin-top: 8px; line-height: 1.4; }
+.dr-phrase { margin: 18px 0 10px; font-size: 22px; font-weight: 800; color: #d6273b; line-height: 1.3; }
+.dr-phrase span { display: block; font-size: 13px; font-weight: 500; color: #666; margin-top: 3px; }
+.dr-ru { font-size: 13px; color: #999; }
+.dr-btns { display: flex; gap: 9px; margin-top: 18px; }
+.dr-btns > * { flex: 1; padding: 12px; border-radius: 11px; font-size: 14px; font-weight: 700; border: none; text-decoration: none; text-align: center; }
+.dr-copy { background: #f0f0f4; color: #333; }
+.dr-amap { background: #00a0e9; color: #fff; }
+
+/* Памятка */
+.memo-sec { border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; margin-bottom: 11px; }
+.memo-h { font-size: 14px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.memo-ul { margin: 0; padding-left: 18px; }
+.memo-ul li { font-size: 12.5px; line-height: 1.5; margin-bottom: 6px; color: var(--ink); }
+.memo-sec.sos { border-color: var(--red); background: #fff8f8; }
+:root.dark .memo-sec.sos { background: #241416; }
+.sos-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.sos-b { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none;
+  background: var(--red); color: #fff; border-radius: 10px; padding: 9px 4px; font-size: 10.5px; font-weight: 600; }
+.sos-b b { font-size: 18px; font-weight: 900; }
+.memo-note { font-size: 11.5px; color: var(--ink-soft); margin-top: 9px; line-height: 1.45; }
+.pk-count { margin-left: auto; font-size: 12px; color: var(--jade); font-weight: 800; }
+.pk-list { margin-top: 9px; }
+.pk-row { display: flex; align-items: center; gap: 9px; padding: 7px 2px; border-bottom: 1px solid var(--line); font-size: 12.5px; cursor: pointer; }
+.pk-row input { width: 18px; height: 18px; accent-color: var(--jade); flex: none; }
+.pk-row.done span { color: var(--muted); text-decoration: line-through; }
+.memo-foot { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; line-height: 1.4; }
+
 /* Напоминание: миграционная онлайн-карта */
 .mig-card { border: 1.5px solid #f0c36d; background: #fff8e8; border-radius: 12px; padding: 11px 12px; margin-bottom: 12px; }
 .mig-card.urgent { border-color: var(--red); background: #fff0f0; box-shadow: 0 0 0 3px rgba(214,39,59,.12); }
@@ -1363,8 +1444,10 @@ a { color: var(--red-dark); }
     </div>
     <div class="tabs">
       <button class="tab active" data-panel="explore">🧭 Обзор</button>
+      <button class="tab" data-panel="plan">🗓️ План</button>
       <button class="tab" data-panel="tickets">🎟️ Билеты</button>
-      <button class="tab" data-panel="phrases">💬 Разговорник</button>
+      <button class="tab" data-panel="phrases">💬 Фразы</button>
+      <button class="tab" data-panel="info">ℹ️ Памятка</button>
     </div>
     <div id="panel-explore" class="panel active">
       <input id="global-search" class="phrase-search" placeholder="🔎 Поиск: отели, места, магазины, рестораны…" oninput="__search(this.value)">
@@ -1384,8 +1467,14 @@ a { color: var(--red-dark); }
       <div class="section-label collapsible" onclick="__collapse(this)"><span class="sec-chev">▾</span> 🛍️ Шопинг и скидки</div>
       <div id="list-shops"></div>
     </div>
+    <div id="panel-plan" class="panel">
+      <div id="plan"></div>
+    </div>
     <div id="panel-tickets" class="panel">
       <div id="tickets"></div>
+    </div>
+    <div id="panel-info" class="panel">
+      <div id="info-memo"></div>
     </div>
     <div id="panel-phrases" class="panel">
       <input id="phrase-search" class="phrase-search" placeholder="🔎 Поиск фразы (напр. «остро», «счёт»)">
@@ -1483,6 +1572,12 @@ a { color: var(--red-dark); }
   var cityVisited = {};
   CITIES.forEach(function (c) { cityVisited[c.id] = !!c.visited; });
   if (STATE.visited) CITIES.forEach(function (c) { if (STATE.visited[c.id] != null) cityVisited[c.id] = STATE.visited[c.id]; });
+
+  // Планировщик по дням, отметки «посещено» для мест, чек-лист сборов
+  if (!STATE.plan) STATE.plan = {};             // { placeId: "YYYY-MM-DD" }
+  if (!STATE.planOrder) STATE.planOrder = [];   // порядок добавления placeId
+  if (!STATE.visitedPlaces) STATE.visitedPlaces = {};   // { placeId: true }
+  if (!STATE.packing) STATE.packing = {};       // { itemId: true }
   var tripDay = (STATE.trip && STATE.trip.day != null) ? STATE.trip.day : 0;   // индекс выбранного дня поездки
 
   // Китайские госпраздники 2026 (приблизительно; точные даты КНР объявляет ежегодно)
@@ -2292,6 +2387,161 @@ a { color: var(--red-dark); }
     ov.querySelector(".ci-x").onclick = close;
   };
 
+  /* ---------------- Планировщик по дням ---------------- */
+  function placeById(id) { for (var i = 0; i < PLACES.length; i++) if (PLACES[i].id === id) return PLACES[i]; return null; }
+  function visitedCount() { var d = 0; PLACES.forEach(function (p) { if (STATE.visitedPlaces[p.id]) d++; }); return { done: d, total: PLACES.length }; }
+  function planSelectHtml(id) {
+    var days = (TRIP && TRIP.days) || []; if (!days.length) return "";
+    var cur = STATE.plan[id] || "";
+    var opts = '<option value="">— не в плане</option>' + days.map(function (d) {
+      return '<option value="' + d.iso + '"' + (cur === d.iso ? ' selected' : '') + '>' + d.dow + ' ' + d.d + (d.isToday ? ' (сегодня)' : '') + '</option>';
+    }).join("");
+    return '<div class="plan-pick"><span class="pp-lbl">🗓️ В план на день</span>' +
+      '<select class="pp-sel" onchange="__planSet(\'' + id + '\', this.value)">' + opts + '</select></div>';
+  }
+  window.__planSet = function (id, iso) {
+    if (iso) { STATE.plan[id] = iso; if (STATE.planOrder.indexOf(id) < 0) STATE.planOrder.push(id); }
+    else { delete STATE.plan[id]; var i = STATE.planOrder.indexOf(id); if (i >= 0) STATE.planOrder.splice(i, 1); }
+    saveState(); buildPlan();
+  };
+  window.__planRemove = function (id) { window.__planSet(id, ""); if (curDestId === id) openDetail("attraction", id, true); };
+  window.__openFromPlan = function (id) { openDetail("attraction", id); if (window.innerWidth <= 860) document.getElementById("sidebar").classList.remove("open"); };
+  window.__visited = function (id, ch) {
+    if (ch) STATE.visitedPlaces[id] = true; else delete STATE.visitedPlaces[id];
+    saveState(); buildPlan(); if (curDestId === id) openDetail("attraction", id, true);
+  };
+  function buildPlan() {
+    var box = document.getElementById("plan"); if (!box) return;
+    var days = (TRIP && TRIP.days) || [];
+    if (!days.length) { box.innerHTML = '<div class="plan-empty">Задайте даты поездки во вкладке «🧭 Обзор».</div>'; return; }
+    var vc = visitedCount();
+    var html = '<div class="plan-head">🗓️ Мой план по дням</div>' +
+      '<div class="plan-sub">Открывайте место (на карте или в списках) и выбирайте «🗓️ В план на день». Осмотрено: <b>' + vc.done + '</b> из ' + vc.total + ' мест.</div>';
+    var total = 0;
+    days.forEach(function (d, di) {
+      var ids = STATE.planOrder.filter(function (id) { return STATE.plan[id] === d.iso; });
+      total += ids.length;
+      html += '<div class="plan-day' + (d.isToday ? ' today' : '') + (d.past ? ' past' : '') + '">' +
+        '<div class="pd-head"><span class="pd-n">День ' + (di + 1) + '</span> · ' + d.dow + ' ' + d.d +
+        (d.isToday ? ' <span class="pd-badge today">сегодня</span>' : '') + (d.holiday ? ' <span class="pd-badge hol">' + d.holiday + '</span>' : '') + '</div>';
+      if (!ids.length) html += '<div class="pd-empty">— ничего не запланировано</div>';
+      else ids.forEach(function (id, idx) {
+        var p = placeById(id); if (!p) return;
+        if (idx > 0) { var prev = placeById(ids[idx - 1]); if (prev) { var e = estimate([prev.lat, prev.lng], [p.lat, p.lng]);
+          html += '<div class="pd-travel">↓ 🚕 ' + fmtMin(e.taxi) + ' · 🚇 ' + fmtMin(e.metro) + ' · ' + (e.d < 1 ? Math.round(e.d * 1000) + ' м' : e.d.toFixed(1) + ' км') + '</div>'; } }
+        var done = !!STATE.visitedPlaces[id];
+        html += '<div class="pd-item' + (done ? ' done' : '') + '">' +
+          '<span class="pd-ic" style="background:' + (p.color || CATS.attraction.color) + '">' + (p.icon || '📍') + '</span>' +
+          '<span class="pd-nm" onclick="__openFromPlan(\'' + id + '\')">' + (done ? '✅ ' : '') + p.name_ru + '</span>' +
+          '<button class="pd-rm" title="Убрать из плана" onclick="__planRemove(\'' + id + '\')">✕</button></div>';
+      });
+      html += '</div>';
+    });
+    if (!total) html += '<div class="plan-empty">Пока пусто. Откройте любую точку → кнопка «🗓️ В план на день».</div>';
+    box.innerHTML = html;
+  }
+
+  /* ---------------- Карточка «Покажите таксисту» ---------------- */
+  function driverAttr(o) {
+    return "__driver({name:'" + jsStr(o.name) + "',zh:'" + jsStr(o.zh || "") + "',addr:'" + jsStr(o.addr || "") +
+      "',tLat:" + o.lat + ",tLng:" + o.lng + "});return false;";
+  }
+  window.__driver = function (o) {
+    var ov = document.getElementById("driver-modal");
+    if (!ov) { ov = document.createElement("div"); ov.id = "driver-modal"; document.body.appendChild(ov); }
+    ov.innerHTML = '<div class="dr-card">' +
+      '<button class="dr-x" aria-label="Закрыть">×</button>' +
+      '<div class="dr-hint">👉 Покажите этот экран водителю</div>' +
+      '<div class="dr-zh">' + (o.zh || o.name) + '</div>' +
+      (o.addr ? '<div class="dr-addr">' + o.addr + '</div>' : '') +
+      '<div class="dr-phrase">请送我到这里<span>Пожалуйста, отвезите меня сюда</span></div>' +
+      '<div class="dr-ru">' + o.name + '</div>' +
+      '<div class="dr-btns">' +
+        '<button class="dr-copy" onclick="__copy(this, \'' + jsStr((o.zh || "") + (o.addr ? " " + o.addr : "")) + '\')">📋 Копировать</button>' +
+        '<a class="dr-amap" href="#" onclick="__amap({tLat:' + o.tLat + ',tLng:' + o.tLng + ',name:\'' + jsStr(o.name) + '\'});return false;">🧭 В Amap</a>' +
+      '</div></div>';
+    ov.style.display = "flex";
+    var close = function () { ov.style.display = "none"; };
+    ov.querySelector(".dr-x").onclick = close;
+    ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
+  };
+  // Блок «в план / посещено» для панели точки
+  function placeExtrasHtml(o) {
+    var done = !!STATE.visitedPlaces[o.id];
+    return '<div class="place-extras">' + planSelectHtml(o.id) +
+      '<label class="visited-chk' + (done ? ' on' : '') + '"><input type="checkbox"' + (done ? ' checked' : '') +
+      ' onchange="__visited(\'' + o.id + '\', this.checked)"><span>' + (done ? "✅ Посещено" : "Отметить как посещённое") + '</span></label></div>';
+  }
+
+  /* ---------------- «Открыто сейчас?» (по времени Китая, UTC+8) ---------------- */
+  function chinaNowMin() { var n = new Date(); var utc = n.getTime() + n.getTimezoneOffset() * 60000; var cn = new Date(utc + 8 * 3600000); return cn.getHours() * 60 + cn.getMinutes(); }
+  function parseHours(text) {
+    var m = /([0-2]?\d)[:：]([0-5]\d)\s*[-–—~至]\s*([0-2]?\d)[:：]([0-5]\d)/.exec(text || "");
+    if (!m) return null; return { o: (+m[1]) * 60 + (+m[2]), c: (+m[3]) * 60 + (+m[4]) };
+  }
+  function openNowBadge(id) {
+    var info = INFO[id]; if (!info || !info.hours || !info.hours.text) return "";
+    var pr = parseHours(info.hours.text); if (!pr) return "";
+    var t = chinaNowMin();
+    var open = pr.c > pr.o ? (t >= pr.o && t < pr.c) : (t >= pr.o || t < pr.c);
+    var hh = function (x) { x = ((x % 1440) + 1440) % 1440; return pad2(Math.floor(x / 60)) + ":" + pad2(x % 60); };
+    return open
+      ? '<div class="open-now open">🟢 Сейчас открыто <span>· до ' + hh(pr.c) + ' (время Китая)</span></div>'
+      : '<div class="open-now closed">🔴 Сейчас закрыто <span>· откроется ' + hh(pr.o) + ' (время Китая)</span></div>';
+  }
+
+  /* ---------------- Памятка: оплата, связь/VPN, SOS, чек-лист сборов ---------------- */
+  var PACKING = [
+    { id: "passport", t: "Загранпаспорта — на всех членов семьи" },
+    { id: "visa", t: "Виза / подтверждение (если требуется)" },
+    { id: "arrival", t: "Миграционная карта (Arrival Card) — заполнить онлайн" },
+    { id: "insurance", t: "Медицинская страховка" },
+    { id: "money", t: "Наличные юани + карты (UnionPay/Visa)" },
+    { id: "pay", t: "Alipay/WeChat Pay настроены (привязана карта)" },
+    { id: "vpn", t: "VPN установлен и проверен ДО поездки" },
+    { id: "esim", t: "eSIM / роуминг оформлены" },
+    { id: "adapter", t: "Переходник для розетки (тип A/C/I)" },
+    { id: "meds", t: "Личные лекарства" },
+    { id: "bookings", t: "Брони отелей и билетов (офлайн-копии)" },
+    { id: "app", t: "Это приложение добавлено на экран «Домой»" }
+  ];
+  window.__packToggle = function (id, ch) { if (ch) STATE.packing[id] = true; else delete STATE.packing[id]; saveState(); buildMemo(); };
+  function buildMemo() {
+    var box = document.getElementById("info-memo"); if (!box) return;
+    var packed = PACKING.filter(function (x) { return STATE.packing[x.id]; }).length;
+    var pct = Math.round(packed / PACKING.length * 100);
+    var pk = PACKING.map(function (x) {
+      return '<label class="pk-row' + (STATE.packing[x.id] ? ' done' : '') + '"><input type="checkbox"' + (STATE.packing[x.id] ? ' checked' : '') +
+        ' onchange="__packToggle(\'' + x.id + '\', this.checked)"><span>' + x.t + '</span></label>';
+    }).join("");
+    box.innerHTML =
+      '<div class="memo-sec"><div class="memo-h">💳 Как платить в Китае</div><ul class="memo-ul">' +
+        '<li><b>Alipay</b> или <b>WeChat Pay</b> — главное. Установите заранее, привяжите карту Visa/Mastercard (раздел «Bank Cards»), оплата по QR почти везде.</li>' +
+        '<li>Наличные юани — на мелкие рынки и такси-нал; разменяйте немного заранее.</li>' +
+        '<li>Прямая оплата картой Visa/Mastercard принимается редко; UnionPay — чуть шире.</li>' +
+        '<li>Фраза: «我用支付宝 / 微信支付» — «плачу Alipay / WeChat».</li>' +
+      '</ul></div>' +
+      '<div class="memo-sec"><div class="memo-h">📶 Связь и VPN</div><ul class="memo-ul">' +
+        '<li><b>VPN поставьте и проверьте ДО прилёта</b> — в Китае настроить его сложно.</li>' +
+        '<li><b>Работают без VPN:</b> Amap (наш режим «Китай»), DiDi, WeChat, Alipay, Baidu.</li>' +
+        '<li><b>Нужен VPN:</b> Google и Google Maps, Instagram, WhatsApp, YouTube, Telegram, Gmail.</li>' +
+        '<li>Интернет: eSIM (купить заранее) или роуминг; отельный Wi-Fi для «западных» сервисов бесполезен без VPN.</li>' +
+      '</ul></div>' +
+      '<div class="memo-sec sos"><div class="memo-h">🆘 Экстренные телефоны</div><div class="sos-grid">' +
+        '<a class="sos-b" href="tel:110"><b>110</b>Полиция</a>' +
+        '<a class="sos-b" href="tel:120"><b>120</b>Скорая</a>' +
+        '<a class="sos-b" href="tel:119"><b>119</b>Пожарные</a>' +
+        '<a class="sos-b" href="tel:122"><b>122</b>ДТП</a>' +
+      '</div>' +
+        '<div class="memo-note">🇷🇺 Генконсульство РФ в Гуанчжоу — адрес и телефон уточните на офиц. сайте: <a href="https://ru.china-embassy.gov.cn/" target="_blank" rel="noopener">ru.china-embassy.gov.cn</a></div>' +
+        '<div class="memo-note">Помощь: <b>请帮帮我</b> (qǐng bāng bāng wǒ) — «помогите»; <b>请叫救护车</b> — «вызовите скорую»; <b>我需要医生</b> — «мне нужен врач».</div>' +
+      '</div>' +
+      '<div class="memo-sec"><div class="memo-h">🧳 Чек-лист сборов <span class="pk-count">' + packed + '/' + PACKING.length + '</span></div>' +
+        '<div class="ci-bar"><div class="ci-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="pk-list">' + pk + '</div></div>' +
+      '<div class="memo-foot">Отметки сохраняются в приложении. Требования по въезду иногда меняются — сверяйтесь перед вылетом.</div>';
+  }
+
   function toggleCat(cat, on) {
     if (cat === "hotel") { hotelCatOn = on; applyHotelVis(); return; }
     Object.keys(markerById).forEach(function (k) {
@@ -2531,6 +2781,7 @@ a { color: var(--red-dark); }
     var day = TRIP ? TRIP.days[tripDay] : null;
     var wk = (day && day.weekend) ? "weekend" : "weekday";
     var html = '<div class="travel-h" style="margin-top:16px">🕐 Часы работы и загруженность</div>';
+    html += openNowBadge(o.id);
     if (info.hours) {
       html += '<div class="hc-hours"><span>🏛️ Часы</span><b>' + info.hours.text + '</b></div>';
       if (info.hours.tickets) html += '<div class="hc-hours"><span>🎫 Билеты</span><b>' + info.hours.tickets + '</b></div>';
@@ -2670,10 +2921,12 @@ a { color: var(--red-dark); }
 
     var actions = '<div class="d-actions">' +
       '<a class="d-btn primary" href="#" onclick="' + navAttr({ tLat: o.lat, tLng: o.lng, name: (o.name_en || name) }) + '">🗺️ Открыть на картах</a>' +
+      '<a class="d-btn ghost" href="#" onclick="' + driverAttr({ name: name, zh: o.zh, addr: o.address, lat: o.lat, lng: o.lng }) + '">🚕 Показать таксисту</a>' +
       (o.site ? '<a class="d-btn ghost" target="_blank" href="' + o.site + '">🌐 Сайт</a>' : '') +
       '</div>';
 
     curDestId = isHotel ? null : id;
+    var extras = isHotel ? "" : placeExtrasHtml(o);
     var hours = '<div id="hc-block">' + hoursCrowdHtml(o) + '</div>' + (id === "airport" ? airportGuideHtml() : "");
     var ticket = isHotel ? "" : placeTicketHtml(o.id);
     var travel = isHotel ? travelTableFromHotel(o) : travelTableFromPlace(o);
@@ -2681,7 +2934,7 @@ a { color: var(--red-dark); }
     var near = nearRestHtml(o.lat, o.lng);
 
     var nearby = isHotel ? nearbyShopsHtml(o) : "";
-    detail.innerHTML = head + '<div class="d-body">' + '<div class="d-rows">' + rows + '</div>' + actions + nearby + hours + ticket + travel + metro + near + '</div>';
+    detail.innerHTML = head + '<div class="d-body">' + '<div class="d-rows">' + rows + '</div>' + actions + extras + nearby + hours + ticket + travel + metro + near + '</div>';
     if (ticket) window.__ptCalc();
     detail.classList.add("open");
     highlight(type, id);
@@ -2702,7 +2955,8 @@ a { color: var(--red-dark); }
     if (r.note) rows += drow("Кратко", r.note);
     if (r.zone) rows += drow("Зона", r.zoneLabel || r.zone);
     var actions = '<div class="d-actions"><a class="d-btn primary" href="#" onclick="' +
-      navAttr({ tLat: r.lat, tLng: r.lng, name: (r.name_en || r.name_ru) }) + '">🗺️ Открыть на картах</a></div>';
+      navAttr({ tLat: r.lat, tLng: r.lng, name: (r.name_en || r.name_ru) }) + '">🗺️ Открыть на картах</a>' +
+      '<a class="d-btn ghost" href="#" onclick="' + driverAttr({ name: r.name_ru, zh: r.zh, addr: (r.zoneLabel || r.zone || ""), lat: r.lat, lng: r.lng }) + '">🚕 Показать таксисту</a></div>';
     detail.innerHTML = head + '<div class="d-body">' + rows + actions + '</div>';
     detail.classList.add("open");
     var idx = RESTAURANTS.indexOf(r);
@@ -3069,6 +3323,7 @@ a { color: var(--red-dark); }
     TRIP.start = f.value; TRIP.end = t.value; tripDayUserSet = false; tripDay = 0;
     STATE.trip = { start: TRIP.start, end: TRIP.end, day: tripDay, userSet: false }; saveState();
     buildTrip();
+    buildPlan();
     if (curDestId) openDetail("attraction", curDestId, true);
   };
   window.__tripDay = function (i) {
@@ -3311,6 +3566,8 @@ a { color: var(--red-dark); }
   buildLists();
   buildTickets();
   buildPhrases("");
+  buildPlan();
+  buildMemo();
   wireUI();
   if (darkMode) document.documentElement.classList.add("dark");   // восстановить тёмную тему
   setBase(STATE.base || "voyager");                                // восстановить слой карты (в т.ч. «Китай»)
