@@ -1,4 +1,4 @@
-const CACHE = 'gz-guide-d3b676d1b5';
+const CACHE = 'gz-guide-25a0219a84';
 const TILES = 'gz-tiles';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-180.png', './icon-192.png', './icon-512.png'];
