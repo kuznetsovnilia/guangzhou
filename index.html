@@ -1248,12 +1248,30 @@ a { color: var(--red-dark); }
 @keyframes slideIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
 .d-head { padding: 15px 16px 13px; color: #fff; position: relative; }
 .d-close {
-  position: absolute; top: 11px; right: 11px; width: 30px; height: 30px; border-radius: 8px; border: none;
+  position: absolute; z-index: 3; top: 11px; right: 11px; width: 30px; height: 30px; border-radius: 8px; border: none;
   background: rgba(255,255,255,.22); color: #fff; font-size: 17px;
 }
 .d-close:hover { background: rgba(255,255,255,.4); }
+/* «Свернуть»: панель уходит, маршрут на карте остаётся видимым */
+.d-min {
+  position: absolute; z-index: 3; top: 47px; right: 11px; width: 30px; height: 30px; border-radius: 8px; border: none;
+  background: rgba(255,255,255,.22); color: #fff; font-size: 19px; line-height: 1; cursor: pointer;
+}
+.d-min:hover { background: rgba(255,255,255,.4); }
+#detail.mini { display: none; }
+.detail-pill {
+  position: fixed; left: 50%; bottom: calc(15px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(140%); z-index: 4200;
+  max-width: 80vw; padding: 10px 16px; border: none; border-radius: 999px;
+  background: rgba(20,22,28,.93); color: #fff; font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 22px rgba(0,0,0,.32); cursor: pointer; opacity: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: transform .22s, opacity .22s;
+}
+.detail-pill.show { transform: translateX(-50%); opacity: 1; }
+.dp-up { font-size: 10px; opacity: .85; margin-right: 2px; }
 .d-kicker { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; opacity: .9; }
-.d-title { font-size: 19px; font-weight: 800; margin: 3px 0 0; line-height: 1.2; padding-right: 34px; }
+.d-title { font-size: 19px; font-weight: 800; margin: 3px 0 0; line-height: 1.2; padding-right: 50px; }
 .d-zh { font-size: 20px; margin-top: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 /* Китайский текст — выделяемый и копируемый (в т.ч. долгим нажатием на смартфоне) */
 .zh-txt, .d-title, .d-pin-ru, .phrase .zh, .phrase .tr, .li-zh {
@@ -1438,6 +1456,8 @@ a { color: var(--red-dark); }
 /* Логотипы магазинов: белый знак на фирменном цвете — и в списке, и на пине */
 .logo-txt { font-weight: 800; letter-spacing: -.02em; line-height: 1; color: #fff; white-space: nowrap; }
 .li-pin svg, .pin svg { display: block; }
+/* Логотип бренда занимает правый верхний угол шапки, поэтому кнопка «свернуть»
+   стоит НЕ слева от крестика (там её полностью закрывал логотип), а прямо под ним. */
 .d-logo { position: absolute; top: 14px; right: 46px; width: 42px; height: 42px; border-radius: 11px;
   background: rgba(255,255,255,.16); display: grid; place-items: center; backdrop-filter: blur(2px); }
 /* логотип лежит поверх шапки, поэтому верхние строки заканчиваем до него —
@@ -1622,6 +1642,8 @@ a { color: var(--red-dark); }
   .mobile-bar .menu-btn { border: none; background: transparent; font-size: 20px; }
   .mobile-bar .mb-title { font-size: 14px; font-weight: 800; color: var(--red); }
   #detail { width: auto; left: 8px; right: 8px; top: auto; bottom: 8px; max-height: 72%; }
+  .d-close { width: 34px; height: 34px; }
+  .d-min { width: 34px; height: 34px; top: 51px; right: 11px; }
   .map-controls { top: 62px; }
   .sidebar-close { display: block !important; }
   /* Безопасные зоны (чёлка / нижняя полоса) в установленном PWA */
@@ -4205,14 +4227,14 @@ a { color: var(--red-dark); }
              metres: real, flags: flags, up: up, down: down };
   }
   /* ---------------- Пеший штрих до выбранной точки ---------------- */
-  var walkLayer = null;
+  var walkLayer = null, walkBounds = null;   // границы пути нужны при сворачивании карточки
   function originPoint() {
     if (originState.type === "geo" && geoLatLng) return { ll: geoLatLng, label: "от вас" };
     var h = byId(HOTELS, originState.hotelId) || HOTELS[0];
     if (!h) return null;
     return { ll: [h.lat, h.lng], label: "от отеля " + (h.short || h.name) };
   }
-  function clearWalk() { if (walkLayer) { map.removeLayer(walkLayer); walkLayer = null; } }
+  function clearWalk() { if (walkLayer) { map.removeLayer(walkLayer); walkLayer = null; } walkBounds = null; }
   /* Рисует штрих и возвращает текст для карточки. Линию тянем только когда
      пешком реально имеет смысл: на десяти километрах она лишь путает. */
   function drawWalk(o) {
@@ -4264,6 +4286,7 @@ a { color: var(--red-dark); }
     }
     var mins = Math.max(1, Math.round(metres / 75));      // 4,5 км/ч пешком
     var human = metres < 1000 ? Math.round(metres) + " м" : (metres / 1000).toFixed(1) + " км";
+    walkBounds = L.latLngBounds(line);
     var mid = line[Math.floor(line.length / 2)];
     L.marker(mid, { interactive: false,
       icon: L.divIcon({ className: "walk-badge",
@@ -4298,12 +4321,14 @@ a { color: var(--red-dark); }
     if (!o) return;
     var dlogo = isHotel ? null : logoFor(o.id);
     var color = dlogo ? dlogo.hex : (isHotel ? CATS.hotel.color : (o.color || CATS.attraction.color));
+    curDetailName = isHotel ? o.name : o.name_ru;
     var kicker = isHotel ? ("Отель" + (o.stars ? " · " + "★".repeat(o.stars) : "")) : (o.kicker || "Достопримечательность");
     var name = isHotel ? o.name : o.name_ru;
 
     var head = '<div class="d-head' + (dlogo ? ' has-logo' : '') +
       '" style="background:linear-gradient(135deg,' + color + ',' + shade(color) + ')">' +
       '<button class="d-close" onclick="__closeDetail()">×</button>' +
+      '<button class="d-min" onclick="__collapseDetail()" title="Свернуть карточку — маршрут останется на карте">\u2304</button>' +
       (dlogo ? '<div class="d-logo">' + logoInner(dlogo, 26) + '</div>' : '') +
       '<div class="d-kicker">' + kicker +
         (o.replica ? ' <span class="rep-badge">1:1</span>' : '') + '</div>' +
@@ -4359,15 +4384,18 @@ a { color: var(--red-dark); }
     var photo = photoBlock(placePhoto(o), name, kicker, color);
     detail.innerHTML = head + photo + '<div class="d-body">' + '<div class="d-rows">' + rows + '</div>' + actions + extras + nearby + hours + ticket + travel + metro + near + '</div>';
     if (ticket) window.__ptCalc();
+    detail.classList.remove("mini"); hidePill();
     detail.classList.add("open");
     highlight(type, id);
     if (!noFly) flyToPoint(toDisp(o.lat, o.lng), Math.max(map.getZoom(), 15), { duration: .35 });
   }
 
   function openRest(r) {
+    curDetailName = r.name_ru;
     var color = CATS.food.color;
     var head = '<div class="d-head" style="background:linear-gradient(135deg,' + color + ',' + shade(color) + ')">' +
       '<button class="d-close" onclick="__closeDetail()">×</button>' +
+      '<button class="d-min" onclick="__collapseDetail()" title="Свернуть карточку — маршрут останется на карте">\u2304</button>' +
       '<div class="d-kicker">Ресторан · ' + (r.cuisine || "") + '</div>' +
       '<div class="d-title">' + r.name_ru + '</div>' +
       ((r.name_en && r.name_en !== r.name_ru) ? '<div class="d-en">' + r.name_en + '</div>' : "") +
@@ -4393,6 +4421,7 @@ a { color: var(--red-dark); }
     var photoR = photoBlock(photoFor(["cuisine:" + restGroup(r)]), r.name_ru,
       "Ресторан · " + (r.cuisine || ""), color);
     detail.innerHTML = head + photoR + '<div class="d-body">' + rows + actions + travelR + '</div>';
+    detail.classList.remove("mini"); hidePill();
     detail.classList.add("open");
     var idx = RESTAURANTS.indexOf(r);
     if (idx >= 0) {
@@ -4410,7 +4439,29 @@ a { color: var(--red-dark); }
     r=Math.max(0,r);g=Math.max(0,g);b=Math.max(0,b);
     return "#" + ((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
   }
-  window.__closeDetail = function () { detail.classList.remove("open"); clearHighlight(); clearWalk(); };
+  /* Свернуть ≠ закрыть. Крестик убирает и карточку, и маршрут; «–» только
+     прячет панель: на смартфоне она закрывает почти весь экран, а посмотреть
+     нужно как раз нарисованный путь. Пока карточка свёрнута, внизу висит ярлык
+     с названием точки — по нему панель возвращается. */
+  var curDetailName = "", detailPill = null;
+  function hidePill() { if (detailPill) detailPill.classList.remove("show"); }
+  window.__collapseDetail = function () {
+    detail.classList.add("mini");
+    if (!detailPill) {
+      detailPill = document.createElement("button");
+      detailPill.className = "detail-pill";
+      detailPill.addEventListener("click", function () { window.__expandDetail(); });
+      document.body.appendChild(detailPill);
+    }
+    detailPill.innerHTML = '<span class="dp-up">\u25b2</span> ' + esc(curDetailName || "Карточка точки");
+    detailPill.classList.add("show");
+    if (walkBounds) map.fitBounds(walkBounds, { padding: [46, 74], animate: true });
+  };
+  window.__expandDetail = function () { detail.classList.remove("mini"); hidePill(); };
+  window.__closeDetail = function () {
+    detail.classList.remove("open"); detail.classList.remove("mini"); hidePill();
+    clearHighlight(); clearWalk();
+  };
 
   var selKey = null;
   function markerKey(type, id) { return (type === "hotel" ? "hotel" : type === "food" ? "food" : "attraction") + ":" + id; }
