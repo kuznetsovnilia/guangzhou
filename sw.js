@@ -1,4 +1,4 @@
-const CACHE = 'gz-guide-010794a6ef';
+const CACHE = 'gz-guide-6a9bdce904';
 const TILES = 'gz-tiles';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-180.png', './icon-192.png', './icon-512.png'];
@@ -6,7 +6,9 @@ self.addEventListener('install', e => { self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).catch(()=>{})); });
 self.addEventListener('activate', e => { e.waitUntil(
   caches.keys().then(ks => Promise.all(ks.map(k => (k!==CACHE && k!==TILES) ? caches.delete(k) : null)))
-    .then(() => self.clients.claim())); });
+    .then(() => caches.open(TILES)).then(c => c.keys().then(ks =>
+      Promise.all(ks.filter(r => /openstreetmap\.org/i.test(r.url)).map(r => c.delete(r)))))
+    .catch(() => {}).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
   const req = e.request; if (req.method !== 'GET') return;
   const url = new URL(req.url);
@@ -14,6 +16,8 @@ self.addEventListener('fetch', e => {
     e.respondWith(fetch(req).then(res => { const c = res.clone();
       caches.open(CACHE).then(cc => cc.put(req, c)); return res; })
       .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))); return; }
+  if (/openstreetmap\.org/i.test(url.href)) {
+    e.respondWith(fetch(req).catch(() => caches.match(req))); return; }
   if (/tile|cartocdn|basemaps|arcgisonline|server\.arcgis/i.test(url.href)) {
     e.respondWith(caches.open(TILES).then(async cache => {
       const hit = await cache.match(req);
