@@ -1,4 +1,4 @@
-const CACHE = 'gz-guide-01c4e1e2a3';
+const CACHE = 'gz-guide-0f121e5517';
 const TILES = 'gz-tiles';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-180.png', './icon-192.png', './icon-512.png'];
@@ -21,7 +21,9 @@ self.addEventListener('fetch', e => {
   if (/tile|cartocdn|basemaps|arcgisonline|server\.arcgis/i.test(url.href)) {
     e.respondWith(caches.open(TILES).then(async cache => {
       const hit = await cache.match(req);
-      const net = fetch(req).then(res => { if (res && res.status === 200) cache.put(req, res.clone()); return res; }).catch(() => hit);
+      const net = fetch(req).then(res => {
+        if (res && (res.status === 200 || res.type === 'opaque')) cache.put(req, res.clone());
+        return res; }).catch(() => hit);
       return hit || net; })); return; }
   e.respondWith(caches.match(req).then(r => r || fetch(req)).catch(() => caches.match(req)));
 });
