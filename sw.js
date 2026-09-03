@@ -1,4 +1,4 @@
-const CACHE = 'gz-guide-b4db65e7af';
+const CACHE = 'gz-guide-2302c46018';
 const TILES = 'gz-tiles';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-180.png', './icon-192.png', './icon-512.png'];
@@ -18,7 +18,7 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))); return; }
   if (/openstreetmap\.org/i.test(url.href)) {
     e.respondWith(fetch(req).catch(() => caches.match(req))); return; }
-  if (/tile|cartocdn|basemaps|arcgisonline|server\.arcgis/i.test(url.href)) {
+  if (/autonavi|appmaptile|tile|cartocdn|basemaps|arcgisonline|server\.arcgis/i.test(url.href)) {
     e.respondWith(caches.open(TILES).then(async cache => {
       const hit = await cache.match(req);
       const net = fetch(req).then(res => {
