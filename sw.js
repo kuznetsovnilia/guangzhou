@@ -1,9 +1,9 @@
-const CACHE = 'gz-guide-33c4b896be';
+const CACHE = 'gz-guide-92164d390d';
 const TILES = 'gz-tiles';
 const ASSETS = 'gz-assets';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-180.png', './icon-192.png', './icon-512.png'];
-const EXTRA = ['./data-offline-bb4ca476d183.json','./data-walk-f31fe427e487.json','./ph-cuisine-dd4ec66a3ec9.json','./ph-dish-b9c29fd26a96.json','./ph-med-1b40464d23ee.json','./ph-paste-51226fa4ed28.json','./ph-place-0e131258079e.json','./ph-place-345f36eaefce.json','./ph-place-8ad27d8a20d3.json','./ph-place-b74763a513bc.json','./ph-place-fd398e44a879.json'];
+const EXTRA = ['./data-offline-bb4ca476d183.json','./data-walk-f31fe427e487.json','./ph-cuisine-dd4ec66a3ec9.json','./ph-dish-b9c29fd26a96.json','./ph-med-1b40464d23ee.json','./ph-paste-51226fa4ed28.json','./ph-place-0bddad904f12.json','./ph-place-57a1b872331c.json','./ph-place-687712259025.json','./ph-place-c4b36bcb058d.json','./ph-place-c7c93d5ec5bd.json'];
 const EXTRA_SET = new Set(EXTRA.map(u => new URL(u, self.registration.scope).href));
 async function fillAssets() {
   const c = await caches.open(ASSETS);
