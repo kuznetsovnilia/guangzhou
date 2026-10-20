@@ -1,9 +1,9 @@
-const CACHE = 'gz-guide-bd2b2f53f5';
+const CACHE = 'gz-guide-7539bb29cf';
 const TILES = 'gz-tiles';
 const ASSETS = 'gz-assets';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
   './icon-180.png', './icon-192.png', './icon-512.png'];
-const EXTRA = ['./data-offline-5072e3e79354.json','./data-offline-bb4ca476d183.json','./data-offline-f2becaa57f24.json','./data-walk-3051e2254bcf.json','./data-walk-ccf7d13e7583.json','./ph-cuisine-dd4ec66a3ec9.json','./ph-dish-b9c29fd26a96.json','./ph-med-1b40464d23ee.json','./ph-paste-51226fa4ed28.json','./ph-place-248029ed6323.json','./ph-place-29551f069105.json','./ph-place-715117d8431d.json','./ph-place-b5ebf75b3da3.json','./ph-place-d38119c10869.json','./ph-place-efa7c6a3b4da.json'];
+const EXTRA = ['./data-offline-5072e3e79354.json','./data-offline-bb4ca476d183.json','./data-offline-f2becaa57f24.json','./data-walk-3051e2254bcf.json','./data-walk-ccf7d13e7583.json','./ph-cuisine-dd4ec66a3ec9.json','./ph-dish-b9c29fd26a96.json','./ph-med-1b40464d23ee.json','./ph-paste-51226fa4ed28.json','./ph-place-06e6fc3c67b2.json','./ph-place-29551f069105.json','./ph-place-42dcfeebcfc0.json','./ph-place-90cea4ebca88.json','./ph-place-b9a3551f586a.json','./ph-place-d38119c10869.json'];
 const EXTRA_SET = new Set(EXTRA.map(u => new URL(u, self.registration.scope).href));
 async function fillAssets() {
   const c = await caches.open(ASSETS);
