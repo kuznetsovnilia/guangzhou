@@ -1,4 +1,4 @@
-const CACHE = 'gz-guide-4ffae9250a';
+const CACHE = 'gz-guide-6e2f42f84c';
 const TILES = 'gz-tiles';
 const ASSETS = 'gz-assets';
 const SHELL = ['./', './index.html', './manifest.webmanifest',
